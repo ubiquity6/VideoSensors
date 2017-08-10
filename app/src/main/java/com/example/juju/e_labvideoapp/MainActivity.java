@@ -83,6 +83,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         head = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+        rot = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         gyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
         cameraPreview = (FrameLayout) findViewById(R.id.camera_preview);
@@ -139,6 +140,8 @@ public class MainActivity extends Activity implements SensorEventListener {
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, head, SensorManager.SENSOR_DELAY_GAME);
         sensorManager.registerListener(this, gyro, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, rot, SensorManager.SENSOR_DELAY_NORMAL);
+
 
 
 
@@ -148,6 +151,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
                 latitude  = location.getLatitude();
                 longitude = location.getLongitude();
+                altitude = location.getAltitude();
 
                 if(location.hasSpeed()) {
                     speed = location.getSpeed();
@@ -317,6 +321,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     LocationManager lm;
     double latitude = 0;
     double longitude = 0;
+    double altitude = 0;
 
     double latitude_original = 0;
     double longitude_original = 0;
@@ -348,14 +353,14 @@ public class MainActivity extends Activity implements SensorEventListener {
 
             if(latitude != 0.0) {
                 String timeStamp = new SimpleDateFormat("HH-mm-ss").format(new Date());
-                writer.println(longitude + "," + latitude + "," + speed + "," + dist[0] + "," + timeStamp + "," + linear_acc_x + "," + linear_acc_y + "," + linear_acc_z + "," +
-                        heading + "," + gyro_x + "," + gyro_y + "," + gyro_z);
+                writer.println(longitude + "," + latitude + "," + altitude + "," + speed + "," + dist[0] + "," + timeStamp + "," + linear_acc_x + "," + linear_acc_y + "," + linear_acc_z + "," +
+                        heading + "," + gyro_x + "," + gyro_y + "," + gyro_z + "," + rotation_x + "," + rotation_y + "," + rotation_z + "," + rotation_w);
             }
             else{
                 dist[0] = (float) 0.0;
                 String timeStamp = new SimpleDateFormat("HH-mm-ss").format(new Date());
-                writer.println(longitude_original + "," + latitude_original + "," + speed + "," + dist[0] + "," + timeStamp + "," + linear_acc_x + "," + linear_acc_y + "," + linear_acc_z + "," +
-                        heading + "," + gyro_x + "," + gyro_y + "," + gyro_z);
+                writer.println(longitude_original + "," + latitude_original + "," + altitude + "," + speed + "," + dist[0] + "," + timeStamp + "," + linear_acc_x + "," + linear_acc_y + "," + linear_acc_z + "," +
+                        heading + "," + gyro_x + "," + gyro_y + "," + gyro_z + "," + rotation_x + "," + rotation_y + "," + rotation_z + "," + rotation_w);
             }
 
 
@@ -372,8 +377,8 @@ public class MainActivity extends Activity implements SensorEventListener {
             e.printStackTrace();
         }
 
-        writer.println("Longitude" + "," + "Latitude" + "," + "Speed" + "," + "Distance" + "," + "Time" + "," + "Acc X" + "," + "Acc Y" + "," + "Acc Z" + "," + "Heading"
-                + "," + "gyro_x" + "," + "gyro_y" + "," + "gyro_z");
+        writer.println("Longitude" + "," + "Latitude" + "," + "Altitude" + "Speed" + "," + "Distance" + "," + "Time" + "," + "Acc X" + "," + "Acc Y" + "," + "Acc Z" + "," + "Heading"
+                + "," + "gyro_x" + "," + "gyro_y" + "," + "gyro_z" + "," + "rotation_x,rotation_y,rotation_z,rotation_w");
         LocationManager original = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Location original_location = original.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if(original.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null){
@@ -403,6 +408,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     private Sensor accelerometer;
     private Sensor head;
     private Sensor gyro;
+    private Sensor rot;
     float linear_acc_x = 0;
     float linear_acc_y = 0;
     float linear_acc_z = 0;
@@ -412,6 +418,11 @@ public class MainActivity extends Activity implements SensorEventListener {
     float gyro_x = 0;
     float gyro_y = 0;
     float gyro_z = 0;
+
+    float rotation_x = 0;
+    float rotation_y = 0;
+    float rotation_z = 0;
+    float rotation_w = 0;
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -434,6 +445,12 @@ public class MainActivity extends Activity implements SensorEventListener {
             else{
                 heading = heading + 90;
             }
+        }
+        else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+            rotation_x = event.values[0];
+            rotation_y = event.values[1];
+            rotation_z = event.values[2];
+            rotation_w = event.values[3];
         }
         else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE){
             gyro_x = event.values[0];
